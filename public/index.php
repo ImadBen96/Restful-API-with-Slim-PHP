@@ -1,16 +1,34 @@
 <?php
-require '../vendor/autoload.php';
+if (PHP_SAPI == 'cli-server') {
+    // To help the built-in PHP dev server, check if the request was actually for
+    // something which should probably be served as a static file
+    $url  = parse_url($_SERVER['REQUEST_URI']);
+    $file = __DIR__ . $url['path'];
+    if (is_file($file)) {
+        return false;
+    }
+}
 
-// Create and configure Slim app
-$config = ['settings' => [
-    'addContentLengthHeader' => false,
-]];
-$app = new \Slim\App($config);
+require __DIR__ . '/../vendor/autoload.php';
 
-// Define app routes
-$app->get('/hello/{name}', function ($request, $response, $args) {
-    return $response->write("Hello " . $args['name']);
-});
+session_start();
+
+// Instantiate the app
+$settings = require __DIR__ . '/../src/settings.php';
+$app = new \Slim\App($settings);
+
+// Set up dependencies
+require __DIR__ . '/../src/dependencies.php';
+
+// Register middleware
+require __DIR__ . '/../src/middleware.php';
+
+
+require __DIR__ . '/../MhSaleemAlzayat/routes.php';
+require __DIR__ . '/../IslamElbadawy/islam.php';
+require __DIR__ . '/../TarekSherif/routes.php';
+
+require __DIR__ . '/../MainAPI/Master.php';
 
 // Run app
 $app->run();
